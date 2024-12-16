@@ -1,0 +1,24 @@
+rest api - json 
+
+
+get / users - HTML Docuement Render -done
+get /api/user - List all user .JSON -done
+get / user / 1 - get the user with id 1
+get / user / 2 - get the user with id 2
+
+dynamic Path Parameters
+Get /api/users/:id
+:id = variable |dynamic
+
+Post.user - create new user
+
+Patch/user/id - Edit the user with id 1
+
+delete / user / 1 - delete the user with id 1
+
+
+
+data base
+Schema - define the structure 
+schema - Model
+useing model  we do CRUD operation
