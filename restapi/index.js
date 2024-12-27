@@ -1,97 +1,126 @@
-const express = require('express')
-// const users = require('./MOCK_DATA.json');
-const fs = require('fs')
-const users = require('./MOCK_DATA.json')
+// Importing dependencies
+const express = require('express');
+const fs = require('fs');
+const mongoose = require('mongoose');
+const users = require('./MOCK_DATA.json');
 
-const app = express()
-const port = 3000
-// middlware
+const app = express();
+const port = 3000;
 
-app.use(express.urlencoded({extended:false}))
+// Connecting to MongoDB
+mongoose.connect('mongodb://localhost:27017/practice-app-1')
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('Error connecting to MongoDB:', err));
 
-app.use((req , res , next )=>{
-  console.log(req.method , req.url)
-  next()
-})
+// Define Mongoose schema and model
+const userSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: true
+  },
+  lastName: {
+    type: String
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  gender: {
+    type: String
+  }
+}, {timestamps:true});
+const Us   er = mongoose.model('User', userSchema);
 
-
-// const fs = require('fs');
+// Middleware
+app.use(express.json()); // For parsing JSON bodies
+app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
-  const logMessage = `\n ${Date.now()} : ${req.method}: ${req.path}\n`;
+  console.log(req.method, req.url);
+  next();
+});
 
+app.use((req, res, next) => {
+  const logMessage = `\n${Date.now()} : ${req.method}: ${req.path}\n`;
   fs.appendFile('log.txt', logMessage, (err) => {
     if (err) {
       console.error('Failed to write to log file:', err);
-      // Optionally, you could handle the error further or pass it to next
     }
-    next(); // Ensure next() is always called
+    next();
   });
 });
 
+// API Endpoints
+app.get('/api/users', async (req, res) => {
+  try {
+    const allUsers = await User.find();
+    return res.json(allUsers);
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
 
+app.get('/api/users/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    return res.json(user);
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
 
+app.post('/api/user', async (req, res) => {
+  try {
+    const { firstName, lastName, email, gender } = req.body;
 
-
-app.get('/api/users', (req, res) => {
-  return res.json(users)
-})
-
-app.get('/users', (req, res) => {
-    const html = `
-    <ul>
-    ${users.map(user => `<li>${user.email}</li>`).join('')}
-    </ul>
-    `
-    res.send(html)
-})
-
-
-app.get('/api/users/:id', (req, res) => {
-
-    const id = Number(req.params.id); // Convert the ID from the URL to a number
-    const user = users.find(user => user.id === id); // Find the user by ID
-     return res.json(user)
-
-  });
-   app.post('/api/user',(req , res)=>{
-    // todo add the user with id
-    const body = req.body;
-    console.log(body);
-    users.push({...body, id: users.length +1});
-    fs.writeFileSync('./MOCK_DATA.json', JSON.stringify(users),(err , data)=>{
-      return res.json({status :"success" ,id: users.length})
+    // Create and save the new user in MongoDB
+    const newUser = new User({
+      firstName,
+      lastName,
+      email,
+      gender
     });
+    const savedUser = await newUser.save();
 
-    
+    // Add the user to MOCK_DATA.json for local use
+    users.push({ ...savedUser._doc, id: users.length + 1 });
+    fs.writeFileSync('./MOCK_DATA.json', JSON.stringify(users, null, 2));
 
-    return res.json({status: "pending"})
-  })
-app.put('/api/user/:id',(req , res)=>{
-    // todo edit the user with id
-    return res.json({status: "pending"})})
-app.delete('/api/user/:id',(req , res)=>{
-    // todo delete the user with id
-    return res.json({status: "pending"})})
+    return res.json({ status: 'success', user: savedUser });
+  } catch (err) {
+    console.error('Error creating user:', err);
+    return res.status(500).json({ error: 'Failed to create user' });
+  }
+});
 
+app.put('/api/user/:id', async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true, // Return the updated document
+      runValidators: true // Validate before saving
+    });
+    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+    return res.json({ status: 'success', user: updatedUser });
+  } catch (err) {
+    console.error('Error updating user:', err);
+    return res.status(500).json({ error: 'Failed to update user' });
+  }
+});
 
-  
+app.delete('/api/user/:id', async (req, res) => {
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    if (!deletedUser) return res.status(404).json({ error: 'User not found' });
+    return res.json({ status: 'success', user: deletedUser });
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    return res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
 
-
-//   app.get('/api/users/:id', (req, res) => {
-//     const id = Number(req.params.id);
-//     const user = users.find(user => user.id === id)
-//     return res.json(user)
-// })
-//   app.get('/api/users/:id', (req, res) => {
-//     const id = Number(req.params.id);
-//     const user = users.find(user => user.id === id)
-//     return res.json(user)
-// })
-
-
-    // app.route('/api/user/:id').get().post().put().delete()
-  
+// Start the server
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Server running on port ${port}`);
+});

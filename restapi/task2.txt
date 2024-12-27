@@ -1,0 +1,3 @@
+schema - define the sturtcure 
+schema- Model
+using model we do Crud operation 
