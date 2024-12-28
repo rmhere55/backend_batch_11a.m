@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     type: String
   }
 }, {timestamps:true});
-const Us   er = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
 
 // Middleware
 app.use(express.json()); // For parsing JSON bodies
@@ -54,27 +54,28 @@ app.use((req, res, next) => {
 // API Endpoints
 app.get('/api/users', async (req, res) => {
   try {
-    const allUsers = await User.find();
+    const allUsers = await User.find([]);
     return res.json(allUsers);
   } catch (err) {
-    return res.status(500).json({ error: 'Failed to fetch users' });
+    return res.status(400).json({ error: 'Failed to fetch users' });
   }
 });
-
+// console.log('Users array:', users);
 app.get('/api/users/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
+    // console.log('Request params:', req.params);
     if (!user) return res.status(404).json({ error: 'User not found' });
     return res.json(user);
   } catch (err) {
-    return res.status(500).json({ error: 'Failed to fetch user' });
+    return res.status(400).json({ error: 'Failed to fetch user' });
   }
 });
 
 app.post('/api/user', async (req, res) => {
   try {
     const { firstName, lastName, email, gender } = req.body;
-
+    // console.log('Request body:', req.body);
     // Create and save the new user in MongoDB
     const newUser = new User({
       firstName,
