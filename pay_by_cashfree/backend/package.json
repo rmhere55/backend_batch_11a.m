@@ -1,17 +1,19 @@
 {
-  "name": "restapi",
+  "name": "backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cashfree-pg": "^4.3.6",
+    "cors": "^2.8.5",
+    "crypt": "^0.0.2",
     "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.2"
+    "nodemon": "^3.1.9"
   }
 }

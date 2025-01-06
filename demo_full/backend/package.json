@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cashfree-pg": "^4.3.6",
     "express": "^4.21.2",
     "nodemon": "^3.1.9"
   }

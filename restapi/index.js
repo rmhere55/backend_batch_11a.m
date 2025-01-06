@@ -133,6 +133,7 @@ const express = require('express');
 const fs = require('fs');
 const mongoose = require('mongoose');
 const users = require('./MOCK_DATA.json');
+const jwt = require('jsonwebtoken ')
 
 const app = express();
 const port = 3000;
@@ -183,6 +184,15 @@ app.use((req, res, next) => {
     next();
   });
 });
+const secret = "RM12345"
+function setuser(id ,user){
+  const payload = {
+    id,
+    ...user,  
+
+  };
+  return jwt.sign(payload , secret)
+}
 
 // Seed the database with mock data if necessary
 const seedDatabase = async () => {

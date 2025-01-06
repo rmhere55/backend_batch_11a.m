@@ -1,4 +1,5 @@
 import express from 'express';
+import {createorder} from './service/chashfree_service.js'
 
 const app = express();
 const port = 3000;
@@ -6,9 +7,20 @@ const port = 3000;
 app.use(express.static('dist'))
 
 
-app.get('/', (req, res) => {
+app.get('/',
+   (req, res) => {
   res.json('Hello World!');
-});
+}
+);
+
+app.get('/api/create-order',
+  async (req , res)=>{
+const payment_session_id= await   createorder()
+console.log(payment_session_id)  
+
+res.json({payment_session_id})
+
+})
 
 app.get('/api/jokes', (req, res) => {
 

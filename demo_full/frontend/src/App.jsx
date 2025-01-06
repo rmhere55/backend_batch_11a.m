@@ -1,33 +1,42 @@
-import { useEffect, useState } from 'react'
- import axios from 'axios'
+// React code 
+
+import { load } from "@cashfreepayments/cashfree-js";
 import './App.css'
 
 function App() {
-  const [Jokes, setJokes] = useState([])
+  let cashfree;
 
-  useEffect( ()=>{
-    axios.get('/api/jokes')
-    .then(response => {
-      setJokes(response.data)
-      })
-    .catch((err)=>{
-      console.log(err)
-    })
-  })
+  var initializeSDK = async function () {
+    cashfree = await load({
+      mode: "sandbox"
+    });
+  }
+  initializeSDK();
+
+  const doPayment = async () => {
+    // Fetch payment session ID from backend
+    const response = await fetch("/api/create-order", {
+      method: "GET",
+    });
+
+    const data = await response.json();
+    console.log(data)
+    const paymentSessionId = data.paymentSessionId;
+
+    let checkoutOptions = {
+      paymentSessionId: paymentSessionId,
+      redirectTarget: "_self",
+    };
+    cashfree.checkout(checkoutOptions);
+  };
   return (
     <>
-    <h1>
-      api call
-    </h1>
-    <p> Jokes :- {Jokes.length}</p>
-    {
-      Jokes.map((joke) => (
-        <div key={joke.id}>
-          <h3> {joke.title}</h3> 
-          <p>{joke.joke}</p>
-          </div>
-      ))
-    }
+      <div className="row">
+        <p>Click below to open the checkout page in current tab</p>
+        <button type="submit" className="btn btn-primary" id="renderBtn" onClick={doPayment}>
+          Pay Now
+        </button>
+      </div>
     </>
   )
 }
